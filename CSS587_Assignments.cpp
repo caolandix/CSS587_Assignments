@@ -3,10 +3,9 @@
 // 
 #include "CSS587_Assignments.h"
 
-int run() {
+void assignment_0(const string filename) {
+	string windowName = "CSS587 - Assignment 0";
 	cv::Mat frame;
-	string filename = "C:/Users/Caolan/source/repos/CSS587_Template/images/warriors.jpg";
-	string windowName = "Basic CSS587 Template Sample";
 
 	try {
 		frame = cv::imread(filename, -1);
@@ -17,7 +16,7 @@ int run() {
 	}
 	if (frame.empty()) {
 		cout << "OpenCV::imread(): Image is empty." << endl;
-		return -1;
+		return;
 	}
 
 	cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
@@ -34,10 +33,51 @@ int run() {
 		if (cv::getWindowProperty(windowName, cv::WND_PROP_VISIBLE) < 1.0)
 			break;
 	}
+
+}
+
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Central execution - Pattern used is factory - Very basic factory
+// Notes: C++ Actually has the basics to support such a creation using <functional> and <unordered_map>. I may expand on this
+// later usign sample code from the internet.
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+int run(const vector<string> args) {
+	string filename = args[1];
+	string assignment = args[2];
+	int assignment_num;
+
+	try {
+		 assignment_num = stoi(assignment);
+	}
+	catch (const invalid_argument& e) {
+		cerr << "Invalid input: No numeric conversion could be performed. (" << e.what() << ")\n";
+	}
+	catch (const out_of_range& e) {
+		cerr << "Overflow error: The number is out of range for an int. (" << e.what() << ")\n";
+	}
+	catch (const exception& e) {
+		cerr << "An unexpected standard exception occurred: " << e.what() << "\n";
+	}
+
+	switch (assignment_num) {
+		case 0 :
+			assignment_0(filename);
+			break;
+		default:
+			cout << "That assignment number is unsupported at this time" << endl;
+			return -1;
+	}
 	cv::destroyAllWindows();
 	return 0;
 }
 
-int main() {
-	return run();
+int main(int argc, char **argv) {
+	vector<string> args(argv, argv + argc);
+
+	if (argc > 2)
+		return run(args);
+	cout << "Command Line args: <filename-to-process> <assignment number>" << endl;
+	return -1;
 }

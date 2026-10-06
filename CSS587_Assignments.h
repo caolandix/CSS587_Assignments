@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 // TODO: Reference additional headers your program requires here.
@@ -18,4 +19,5 @@ using namespace std;
 using namespace cv;
 
 // Function prototypes
-int run();
+int run(const vector<string>);
+void assignment_0(const string);
