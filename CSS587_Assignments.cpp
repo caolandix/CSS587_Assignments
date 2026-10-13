@@ -38,28 +38,6 @@ private:
 	cv::VideoCapture m_cap;
 };
 
-
-// AppMgr appMgr;
-
-/*
-static void staticCallbackWrapper(void* userData, int eventData) {
-	// Cast the void* back into the specific class pointer
-	MyClass* instance = static_cast<MyClass*>(userData);
-
-	// Delegate execution to the non-static member method
-	if (instance) {
-		instance->instanceCallback(eventData);
-	}
-}
-
-void onTrackbarSlide(int pos, void *) {
-	appMgr.setCap(cv::CAP_PROP_POS_FRAMES, pos);
-	if (!appMgr.getDontSet())
-		appMgr.setRun(1);
-	appMgr.setDontSet(false);
-}
-*/
-
 void AppMgr::Ex2_4() {
 	string windowName = "OpenCV Book - Example 2-4";
 	cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
