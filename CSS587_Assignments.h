@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CSS587_Assignments.h : preprocessor includes, function prototypes, preprocessor constants
+// CSS587_Assignments.h : preprocessor includes, function prototypes, constants
 // Author: Caolan O'Domhnaill
 // Git: https://github.com/caolandix/CSS587_Assignments, Branch: CSS587_ASSIGNMENT1
 // Assignment 1
@@ -11,6 +11,7 @@
 #ifndef CSS587_ASSIGNMENTS_H
 #define CSS587_ASSIGNMENTS_H
 
+// C++ Standard Library headers
 #include <iostream>
 #include <string>
 #include <vector>
@@ -21,7 +22,7 @@
 #include <opencv2/imgproc.hpp>
 
 // Namespaces
-// NOTE: Not using cv because I want to explicitly call out those members and methods of the OpenCV library
+// NOTE: Not using namespace cv because I like to explicitly call out those members and methods of the OpenCV library
 using namespace std;
 //
 // Preprocessor Constants
@@ -29,12 +30,13 @@ using namespace std;
 // Blur constants
 #define SIGMA_MIN 2
 #define SIGMA_MAX 10
+
 // Edge detection constants
-#define THRESHOLD_MIN 20
-#define THRESHOLD_MAX 60
+// NOTE: It is best practices to ensure that the Threshold max is 3 * threshold min
+const int THRESHOLD_MIN = 20;
+const int THRESHOLD_MAX = THRESHOLD_MIN * 3;
 
-
-// Function prototypes. Modern C++ doesn't need this but I like to maintain it
+// Function prototypes
 int run(const string);
 void image_flip(const cv::Mat, cv::Mat&);
 void image_grayscale(const cv::Mat, cv::Mat&);

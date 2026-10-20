@@ -88,7 +88,7 @@ void image_edgedetection(const cv::Mat img, cv::Mat &img_edges, const int low_th
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function Name: on_trackbar_blur()
 // Purpose: Callback function that allows the user to blur the grayscale image
-// Inputs: 
+// Inputs: (Standard parameter set for Trackbar callback as defined by OpenCV)
 // - sigma_slider: Current position of the slider
 // - img: a void pointer to the cv::Mat image 
 // Pre Conditions: image is gray-scaled, and possibly blurred already depending on if the slider was already adjusted
@@ -101,6 +101,7 @@ void on_trackbar_blur(int sigma_slider, void* img) {
 	image_blur(grayed_img, blurred, sigma_slider, sigma_slider);
 	image_edgedetection(blurred, img_edges, THRESHOLD_MIN, THRESHOLD_MAX);
 	cv::imshow("CSS587 - Assignment 1 - Processed", img_edges);
+	
 	// Write out the edge detected image
 	try {
 		cv::imwrite("./output.jpg", img_edges);
@@ -145,6 +146,14 @@ void process_contours(const string wnd, cv::Mat grayed_img) {
 		cv::drawContours(drawing, contours, static_cast<int>(i), color, 1, cv::LINE_8, hierarchy, 0);
 	}
 	cv::imshow(wnd, drawing);
+
+	// Write out the contoured image
+	try {
+		cv::imwrite("./contours.jpg", drawing);
+	}
+	catch (const cv::Exception& e) {
+		cerr << "Error writing file \"./contours.jpg\". Reason: " << e.msg << endl;
+	}
 }
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,51 +173,59 @@ void create_histogram_of_many_colors(const string wnd, const cv::Mat img) {
 	vector<cv::Mat> bgr_planes;
 	cv::split(img, bgr_planes);
 
-	int histSize = 256;         // Number of bins (0-255)
+	int hist_size = 256;         // Number of bins (0-255)
 	float range[] = { 0, 256 }; // Upper boundary is exclusive (0 to 255)
-	const float* histRange[] = { range };
+	const float* hist_range[] = { range };
 	bool uniform = true;
 	bool accumulate = false;
 	// Output matrices for the histograms
 	cv::Mat b_hist, g_hist, r_hist;
 
 	// Calculate the histograms for each channel
-	cv::calcHist(&bgr_planes[0], 1, 0, cv::Mat(), b_hist, 1, &histSize, histRange, uniform, accumulate);
-	cv::calcHist(&bgr_planes[1], 1, 0, cv::Mat(), g_hist, 1, &histSize, histRange, uniform, accumulate);
-	cv::calcHist(&bgr_planes[2], 1, 0, cv::Mat(), r_hist, 1, &histSize, histRange, uniform, accumulate);
+	cv::calcHist(&bgr_planes[0], 1, 0, cv::Mat(), b_hist, 1, &hist_size, hist_range, uniform, accumulate);
+	cv::calcHist(&bgr_planes[1], 1, 0, cv::Mat(), g_hist, 1, &hist_size, hist_range, uniform, accumulate);
+	cv::calcHist(&bgr_planes[2], 1, 0, cv::Mat(), r_hist, 1, &hist_size, hist_range, uniform, accumulate);
 
 	// Create an canvas image to draw the histograms
 	int hist_w = 512;
 	int hist_h = 400;
-	int bin_w = cvRound((double)hist_w / histSize);
-	cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(20, 20, 20)); // Dark background
+	int bin_w = cvRound((double)hist_w / hist_size);
+	cv::Mat hist_img(hist_h, hist_w, CV_8UC3, cv::Scalar(20, 20, 20)); // Dark background
 
-	// 6. Normalize the results to fit the canvas height
-	cv::normalize(b_hist, b_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
-	cv::normalize(g_hist, g_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
-	cv::normalize(r_hist, r_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+	// Normalize the results to fit the canvas height
+	cv::normalize(b_hist, b_hist, 0, hist_img.rows, cv::NORM_MINMAX, -1, cv::Mat());
+	cv::normalize(g_hist, g_hist, 0, hist_img.rows, cv::NORM_MINMAX, -1, cv::Mat());
+	cv::normalize(r_hist, r_hist, 0, hist_img.rows, cv::NORM_MINMAX, -1, cv::Mat());
 	
 	// Draw the histograms onto the canvas
-	for (int i = 1; i < histSize; i++) {
+	for (int i = 1; i < hist_size; i++) {
 		// Draw Blue channel histogram
-		cv::line(histImage,
+		cv::line(hist_img,
 			cv::Point(bin_w * (i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
 			cv::Point(bin_w * (i), hist_h - cvRound(b_hist.at<float>(i))),
 			cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
 
 		// Draw Green channel histogram
-		cv::line(histImage,
+		cv::line(hist_img,
 			cv::Point(bin_w * (i - 1), hist_h - cvRound(g_hist.at<float>(i - 1))),
 			cv::Point(bin_w * (i), hist_h - cvRound(g_hist.at<float>(i))),
 			cv::Scalar(0, 255, 0), 2, cv::LINE_AA);
 
 		// Draw Red channel histogram
-		cv::line(histImage,
+		cv::line(hist_img,
 			cv::Point(bin_w * (i - 1), hist_h - cvRound(r_hist.at<float>(i - 1))),
 			cv::Point(bin_w * (i), hist_h - cvRound(r_hist.at<float>(i))),
 			cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
 	}
-	cv::imshow(wnd, histImage);
+	cv::imshow(wnd, hist_img);
+	
+	// Write out the contoured image
+	try {
+		cv::imwrite("./hist_colours.jpg", hist_img);
+	}
+	catch (const cv::Exception& e) {
+		cerr << "Error writing file \"./hist_colours.jpg\". Reason: " << e.msg << endl;
+	}
 }
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,7 +242,7 @@ void create_histogram_of_many_colors(const string wnd, const cv::Mat img) {
 //
 int run(const string filename) {
 	string wnd_primary = "CSS587 - Assignment 1 - Processed";
-	string wnd_2ndaryimage_mods = "Secondary Image Mods";
+	string wnd_2ndaryimage_mods = "Image Contours";
 	string wnd_histogram_colors = "Colour Histogram";
 	string target_filename = "./output.jpg";
 	cv::Mat img, img_flip, img_grayscale, img_blur, img_edges;
