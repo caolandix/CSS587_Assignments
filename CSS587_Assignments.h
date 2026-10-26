@@ -17,8 +17,7 @@
 #include <opencv2/opencv.hpp>
 
 using namespace std;
-using namespace cv;
 
 // Function prototypes
 int run(const vector<string>);
-void assignment_0(const string);
+void create_histogram(const string, cv::Mat, cv::Mat);
