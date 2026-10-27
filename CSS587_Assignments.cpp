@@ -21,17 +21,18 @@ void create_histogram(const string wnd_name, cv::Mat src_img, cv::Mat &tgt_img) 
 	cv::Mat histogram(3, dims, CV_32S, cv::Scalar::all(0));
 	int bucket_size = 256 / buckets;
 
+	// loop throught the source image and create the histogram. 
 	for (int row = 0; row < src_img.rows; ++row) {
 		for (int col = 0; col < src_img.cols; ++col) {
 			cv::Vec3b& pixel = src_img.at<cv::Vec3b>(row, col); // Reference to BGR vector
 
 			// Figure out the bucket to increment
 			int blue_bucket = pixel[0] / bucket_size, green_bucket = pixel[1] / bucket_size, red_bucket = pixel[2] / bucket_size;
-			histogrsam.at<int>(blue_bucket, green_bucket, red_bucket)++;
+			histogram.at<int>(blue_bucket, green_bucket, red_bucket)++;
 		}
 	}
 	
-	// Loop through the 
+	// Loop through the bg_image and replace the colours
 	for (int row = 0; row < src_img.rows; ++row) {
 		for (int col = 0; col < src_img.cols; ++col) {
 			cv::Vec3b& pixel = src_img.at<cv::Vec3b>(row, col); // Reference to BGR vector
@@ -80,6 +81,9 @@ int run() {
 		cerr << "Error opening file \"" << foreground_file << "\". Reason: " << e.msg << endl;
 		return -1;
 	}
+
+	// deep copy the foreground to the basckground image to modify in creating a histogram
+	bg_img = fg_img.clone();
 	cv::namedWindow(wnd_fg, cv::WINDOW_AUTOSIZE);
 	cv::namedWindow(wnd_bg, cv::WINDOW_AUTOSIZE);
 	cv::namedWindow(wnd_overlay, cv::WINDOW_AUTOSIZE);
