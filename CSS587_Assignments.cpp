@@ -48,9 +48,9 @@ void create_histogram(const string wnd_name, cv::Mat src_img, cv::Mat &tgt_img) 
 			green_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);// Green channel
 			red_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);		// Red Channel
 
-			tgt_img.at<cv::Vec3b>(col, row)[0] = blue_bucket;		// Blue channel
-			tgt_img.at<cv::Vec3b>(col, row)[1] = green_bucket;	// Green channel
-			tgt_img.at<cv::Vec3b>(col, row)[2] = red_bucket;		// Red Channel
+			tgt_img.at<int>(blue_bucket) = cBlue;		// Blue channel
+			tgt_img.at<int>(green_bucket) = cGreen;	// Green channel
+			tgt_img.at<int>(red_bucket) = cRed;		// Red Channel
 		}
 	}
 }
