@@ -20,7 +20,6 @@ void create_histogram(const string wnd_name, cv::Mat src_img, cv::Mat &tgt_img) 
 	int dims[] = { buckets, buckets, buckets };
 	cv::Mat histogram(3, dims, CV_32S, cv::Scalar::all(0));
 	int bucket_size = 256 / buckets;
-	vector<int> bucket_cnts = { 0, 0, 0, 0 };
 
 	for (int row = 0; row < src_img.rows; ++row) {
 		for (int col = 0; col < src_img.cols; ++col) {
@@ -28,22 +27,10 @@ void create_histogram(const string wnd_name, cv::Mat src_img, cv::Mat &tgt_img) 
 
 			// Figure out the bucket to increment
 			int blue_bucket = pixel[0] / bucket_size, green_bucket = pixel[1] / bucket_size, red_bucket = pixel[2] / bucket_size;
-			bucket_cnts.at(blue_bucket)++;
-			bucket_cnts.at(green_bucket)++;
-			bucket_cnts.at(red_bucket)++;
-
-			/*
-			histogram.at<cv::Vec3b>(col, row)[0] = blue_bucket;		// Blue channel
-			histogram.at<cv::Vec3b>(col, row)[1] = green_bucket;	// Green channel
-			histogram.at<cv::Vec3b>(col, row)[2] = red_bucket;		// Red Channel
-			*/
+			histogrsam.at<int>(blue_bucket, green_bucket, red_bucket)++;
 		}
 	}
-	// Dereference the iterator to get the value
-	auto max_it = max_element(bucket_cnts.begin(), bucket_cnts.end());
-	int max_val = *max_it;
-
-
+	
 	// Loop through the 
 	for (int row = 0; row < src_img.rows; ++row) {
 		for (int col = 0; col < src_img.cols; ++col) {
@@ -57,9 +44,9 @@ void create_histogram(const string wnd_name, cv::Mat src_img, cv::Mat &tgt_img) 
 			int cGreen = pixel[1] * bucket_size + bucket_size / 2;
 			int cRed = pixel[2] * bucket_size + bucket_size / 2;
 
-			blue_bucket = histogram.at<cv::Vec3b>(col, row)[0];		// Blue channel
-			green_bucket = histogram.at<cv::Vec3b>(col, row)[1];// Green channel
-			red_bucket = histogram.at<cv::Vec3b>(col, row)[2];		// Red Channel
+			blue_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);		// Blue channel
+			green_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);// Green channel
+			red_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);		// Red Channel
 
 			tgt_img.at<cv::Vec3b>(col, row)[0] = blue_bucket;		// Blue channel
 			tgt_img.at<cv::Vec3b>(col, row)[1] = green_bucket;	// Green channel
