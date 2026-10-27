@@ -10,7 +10,7 @@
 // - wnd_name: the name of the window we're outputting to
 // - src_img: The source image we're building the histogram from
 // - tgt_img: the target image we're writing the image to after it has been modded by the "greenscreen" colour
-// Output: tgt_img
+// Output: tgt_img with updated pixels
 // Pre: 
 // Post: 
 // Notes:

@@ -1,18 +1,12 @@
 ﻿// CSS587_Template.h : Include file for standard system include files,
 // or project specific include files.
-
-#pragma once
+#ifndef CSS587_ASSIGNMENTS_H
+#define CSS587_ASSIGNMENTS_H
 
 #include <iostream>
 #include <string>
-#include <vector>
-#include <algorithm>
 
-// TODO: Reference additional headers your program requires here.
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/core.hpp>
+// OpenCV related
 #include <opencv2/core/mat.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -23,3 +17,5 @@ const int buckets = 4;
 // Function prototypes
 int run(const vector<string>);
 void create_histogram(const string, cv::Mat, cv::Mat&);
+
+#endif
