@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
+#include <algorithm>
 
 // TODO: Reference additional headers your program requires here.
 #include <opencv2/highgui/highgui.hpp>
@@ -18,6 +18,8 @@
 
 using namespace std;
 
+const int buckets = 4;
+
 // Function prototypes
 int run(const vector<string>);
-void create_histogram(const string, cv::Mat, cv::Mat);
+void create_histogram(const string, cv::Mat, cv::Mat&);
