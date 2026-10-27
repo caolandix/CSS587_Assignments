@@ -33,9 +33,9 @@ void create_histogram(const string wnd_name, cv::Mat src_img, cv::Mat &tgt_img) 
 	}
 	
 	// Loop through the bg_image and replace the colours
-	for (int row = 0; row < src_img.rows; ++row) {
-		for (int col = 0; col < src_img.cols; ++col) {
-			cv::Vec3b& pixel = src_img.at<cv::Vec3b>(row, col); // Reference to BGR vector
+	for (int row = 0; row < tgt_img.rows; ++row) {
+		for (int col = 0; col < tgt_img.cols; ++col) {
+			cv::Vec3b& pixel = tgt_img.at<cv::Vec3b>(row, col); // Reference to BGR vector
 
 			// Figure out the bucket to increment
 			int blue_bucket = pixel[0] / bucket_size, green_bucket = pixel[1] / bucket_size, red_bucket = pixel[2] / bucket_size;
@@ -48,10 +48,8 @@ void create_histogram(const string wnd_name, cv::Mat src_img, cv::Mat &tgt_img) 
 			blue_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);		// Blue channel
 			green_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);// Green channel
 			red_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);		// Red Channel
-
-			tgt_img.at<int>(blue_bucket) = cBlue;		// Blue channel
-			tgt_img.at<int>(green_bucket) = cGreen;	// Green channel
-			tgt_img.at<int>(red_bucket) = cRed;		// Red Channel
+			pixel[0] = cBlue, pixel[1] = cGreen, pixel[2] = cRed;
+			tgt_img.at<cv::Vec3b>(row, col) = pixel;
 		}
 	}
 }
