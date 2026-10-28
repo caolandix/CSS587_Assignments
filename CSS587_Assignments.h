@@ -9,13 +9,13 @@
 // OpenCV related
 #include <opencv2/core/mat.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/xfeatures2d.hpp>
 
 using namespace std;
 
-const int buckets = 4;
+const int scale = 8;
 
 // Function prototypes
 int run(const vector<string>);
-void create_histogram(const string, cv::Mat, cv::Mat&);
 
 #endif

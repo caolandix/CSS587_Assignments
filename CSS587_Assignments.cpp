@@ -4,57 +4,6 @@
 #include "CSS587_Assignments.h"
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Function: create_histogram
-// Purpose: Creates the histogram table
-// Inputs:
-// - wnd_name: the name of the window we're outputting to
-// - src_img: The source image we're building the histogram from
-// - tgt_img: the target image we're writing the image to after it has been modded by the "greenscreen" colour
-// Output: tgt_img with updated pixels
-// Pre: 
-// Post: 
-// Notes:
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-void create_histogram(const string wnd_name, cv::Mat src_img, cv::Mat &tgt_img) {
-	int dims[] = { buckets, buckets, buckets };
-	cv::Mat histogram(3, dims, CV_32S, cv::Scalar::all(0));
-	int bucket_size = 256 / buckets;
-
-	// loop throught the source image and create the histogram. 
-	for (int row = 0; row < src_img.rows; ++row) {
-		for (int col = 0; col < src_img.cols; ++col) {
-			cv::Vec3b& pixel = src_img.at<cv::Vec3b>(row, col); // Reference to BGR vector
-
-			// Figure out the bucket to increment
-			int blue_bucket = pixel[0] / bucket_size, green_bucket = pixel[1] / bucket_size, red_bucket = pixel[2] / bucket_size;
-			histogram.at<int>(blue_bucket, green_bucket, red_bucket)++;
-		}
-	}
-	
-	// Loop through the bg_image and replace the colours
-	for (int row = 0; row < tgt_img.rows; ++row) {
-		for (int col = 0; col < tgt_img.cols; ++col) {
-			cv::Vec3b& pixel = tgt_img.at<cv::Vec3b>(row, col); // Reference to BGR vector
-
-			// Figure out the bucket to increment
-			int blue_bucket = pixel[0] / bucket_size, green_bucket = pixel[1] / bucket_size, red_bucket = pixel[2] / bucket_size;
-			
-			// Find out what the pixel is close to and assign it a new value which then gets put into the background image
-			int cBlue = pixel[0] * bucket_size + bucket_size / 2;
-			int cGreen = pixel[1] * bucket_size + bucket_size / 2;
-			int cRed = pixel[2] * bucket_size + bucket_size / 2;
-
-			blue_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);		// Blue channel
-			green_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);// Green channel
-			red_bucket = histogram.at<int>(blue_bucket, green_bucket, red_bucket);		// Red Channel
-			pixel[0] = cBlue, pixel[1] = cGreen, pixel[2] = cRed;
-			tgt_img.at<cv::Vec3b>(row, col) = pixel;
-		}
-	}
-}
-//
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function: run()
 // Purpose: primary execution loop - opens two files, creates two windows of a pre and post analysis of the colour histogram
 // Inputs: n/a
@@ -65,37 +14,58 @@ void create_histogram(const string wnd_name, cv::Mat src_img, cv::Mat &tgt_img) 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 int run() {
-	string foreground_file = "./foreground.jpg";
-	string overlay_file = "./overlay.jpg";
-	string wnd_fg = "CSS587 - Assignment 2 - Foreground";
-	string wnd_bg = "CSS587 - Assignment 2 - Background";
-	string wnd_overlay = "CSS587 - Assignment 2 - Histogram Processed";
-	cv::Mat fg_img, bg_img;
+	string image_file1 = "C:/Users/Caolan/source/repos/CSS587_Assignments/kittens1.jpg";
+	string image_file2 = "C:/Users/Caolan/source/repos/CSS587_Assignments/kittens2.jpg";
+	string wnd_primary = "CSS587 - Assignment 3";
+	cv::Mat img_kittens1, img_kittens2, img_output;
 
 	try {
-		fg_img = cv::imread(foreground_file);
+		img_kittens1 = cv::imread(image_file1);
 	}
 	catch (const cv::Exception& e) {
-		cerr << "Error opening file \"" << foreground_file << "\". Reason: " << e.msg << endl;
+		cerr << "Error opening file \"" << image_file1 << "\". Reason: " << e.msg << endl;
 		return -1;
+	}
+	try {
+		img_kittens2 = cv::imread(image_file2);
+	}
+	catch (const cv::Exception& e) {
+		cerr << "Error opening file \"" << image_file2 << "\". Reason: " << e.msg << endl;
+		return -1;
+	}
+	//-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
+	int minHessian = 400;
+	cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create(minHessian);
+	vector<cv::KeyPoint> keypoints1, keypoints2;
+	cv::Mat descriptors1, descriptors2;
+	detector->detectAndCompute(img_kittens1, cv::noArray(), keypoints1, descriptors1);
+	detector->detectAndCompute(img_kittens2, cv::noArray(), keypoints2, descriptors2);
+
+	//-- Step 2: Matching descriptor vectors with a FLANN based matcher
+	// Since SURF is a floating-point descriptor NORM_L2 is used
+	cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
+	vector<vector<cv::DMatch>> knn_matches;
+	matcher->knnMatch(descriptors1, descriptors2, knn_matches, 2);
+
+	//-- Filter matches using the Lowe's ratio test
+	const float ratio_thresh = 0.7f;
+	std::vector<cv::DMatch> good_matches;
+	for (size_t i = 0; i < knn_matches.size(); i++) {
+		if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
+			good_matches.push_back(knn_matches[i][0]);
 	}
 
-	// deep copy the foreground to the basckground image to modify in creating a histogram
-	bg_img = fg_img.clone();
-	cv::namedWindow(wnd_fg, cv::WINDOW_AUTOSIZE);
-	cv::namedWindow(wnd_bg, cv::WINDOW_AUTOSIZE);
-	cv::namedWindow(wnd_overlay, cv::WINDOW_AUTOSIZE);
-	create_histogram(wnd_fg, fg_img, bg_img);
-	cv::imshow(wnd_fg, fg_img);
-	cv::imshow(wnd_bg, bg_img);
-	cv::imshow(wnd_overlay, bg_img);
-	try {
-		cv::imwrite(overlay_file, bg_img);
-	}
-	catch (const cv::Exception& e) {
-		cerr << "Error writing file \"" << overlay_file << "\". Reason: " << e.msg << endl;
-		return -1;
-	}
+	//-- Draw matches
+	cv::Mat img_output;
+	cv::drawMatches(img_kittens1, keypoints1, img_kittens2, keypoints2, good_matches, img_output, cv::Scalar::all(-1),
+		cv::Scalar::all(-1), vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+
+	cv::namedWindow(wnd_primary, cv::WINDOW_NORMAL);
+	cv::imshow(wnd_primary, img_kittens1);
+	cv::resizeWindow(wnd_primary, img_output.cols / scale, img_output.rows / scale);
+	cv::imshow(wnd_primary, img_output);
+
 	// check for and handle the ESCape and Space
 	if (cv::waitKey(0) == 27 || cv::waitKey(0) == 32)
 		cv::destroyAllWindows();

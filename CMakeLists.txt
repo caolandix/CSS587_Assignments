@@ -7,12 +7,13 @@ project(CSS587_Assignments LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(OpenCV_DIRBASE "C:/Users/Caolan/Documents")
-set(OpenCV_DIR "C:/Users/Caolan/Documents/opencv_4.x-4.x/out/build/x64-Debug")
+set(OpenCV_DIR "C:/Users/Caolan/source/repos/opencv/out/build/x64-Debug")
 find_package(OpenCV REQUIRED COMPONENTS
   core
   highgui
   imgproc
   imgcodecs
+  xfeatures2d
 )
 message(STATUS "OpenCV library status:")
 message(STATUS "    version: ${OpenCV_VERSION}")
