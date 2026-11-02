@@ -60,26 +60,32 @@ void doSIFTDetector(const cv::Mat img_src1, const cv::Mat img_src2, cv::Mat& img
 // - img_output: Updated output image with matches
 // Preconditions: images 1st and 2nd are loaded
 // PostConditions: output with matches are put together.
-// Notes:
+// Notes: I had to special build the xfeatures2d library for SURF. I also tested on my own cat images. Same cat, same time, 
+// just different poise and the lower hessian transform matrix made it more readable. Tested with 500 and then 800. Much lower
+// at 200 yielded nearly same unviewable amount of noise. 400 seems to be the sweet spot as stated by the sample code I pulled 
+// its usage from. SURF is MUCH noiser than SIFT when there are less matches.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 void doSURFDetector(const cv::Mat img_src1, const cv::Mat img_src2, cv::Mat& img_output) {
 
 	// Detect the keypoints using SURF Detector, compute the descriptors
-	int minHessian = 400;
-	cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create(minHessian);
+	// Initialize the SURF detector with a Hessian Threshold
+	// Higher thresholds(e.g., 400 - 500) yield fewer, more distinct keypoints
+	int min_hessian = 400;
+	cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create(min_hessian);
 	vector<cv::KeyPoint> keypoints1, keypoints2;
 	cv::Mat descriptors1, descriptors2;
 	detector -> detectAndCompute(img_src1, cv::noArray(), keypoints1, descriptors1);
 	detector -> detectAndCompute(img_src2, cv::noArray(), keypoints2, descriptors2);
 
-	// Step 2: Matching descriptor vectors with a FLANN based matcher
+	// Matching descriptor vectors with a FLANN based matcher
 	// Since SURF is a floating-point descriptor NORM_L2 is used
 	cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
 	vector<vector<cv::DMatch>> knn_matches;
 	matcher -> knnMatch(descriptors1, descriptors2, knn_matches, 2);
 
 	// Filter matches using the Lowe's ratio test
+	// Lowe's ration test 
 	const float ratio_thresh = 0.7f;
 	std::vector<cv::DMatch> good_matches;
 	for (size_t i = 0; i < knn_matches.size(); i++) {
@@ -107,11 +113,11 @@ void doSURFDetector(const cv::Mat img_src1, const cv::Mat img_src2, cv::Mat& img
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 int run() {
-	string image_file1 = "C:/Users/Caolan/source/repos/CSS587_Assignments/kittens1.jpg";
-	string image_file2 = "C:/Users/Caolan/source/repos/CSS587_Assignments/kittens2.jpg";
+	string image_file1 = "./kittens1.jpg";
+	string image_file2 = "./kittens2.jpg";
 	string wnd_sift = "CSS587 - Assignment 3 - SIFT";
 	string wnd_surf = "CSS587 - Assignment 3 - SURF";
-	cv::Mat img_kittens1, img_kittens2, img_output1, img_output2;
+	cv::Mat img_kittens1, img_kittens2, img_output;
 
 	try {
 		img_kittens1 = cv::imread(image_file1);
@@ -130,15 +136,15 @@ int run() {
 	cv::namedWindow(wnd_sift, cv::WINDOW_NORMAL);
 	cv::namedWindow(wnd_surf, cv::WINDOW_NORMAL);
 
-	doSIFTDetector(img_kittens1, img_kittens2, img_output1);
+	doSIFTDetector(img_kittens1, img_kittens2, img_output);
 	cv::imshow(wnd_sift, img_kittens1);
-	cv::resizeWindow(wnd_sift, img_output1.cols / scale, img_output1.rows / scale);
-	cv::imshow(wnd_sift, img_output1);
+	cv::resizeWindow(wnd_sift, img_output.cols / scale, img_output.rows / scale);
+	cv::imshow(wnd_sift, img_output);
 
-	doSURFDetector(img_kittens1, img_kittens2, img_output2);
+	doSURFDetector(img_kittens1, img_kittens2, img_output);
 	cv::imshow(wnd_surf, img_kittens1);
-	cv::resizeWindow(wnd_surf, img_output2.cols / scale, img_output2.rows / scale);
-	cv::imshow(wnd_surf, img_output2);
+	cv::resizeWindow(wnd_surf, img_output.cols / scale, img_output.rows / scale);
+	cv::imshow(wnd_surf, img_output);
 
 	// check for and handle the ESCape and Space
 	if (cv::waitKey(0) == 27 || cv::waitKey(0) == 32)
